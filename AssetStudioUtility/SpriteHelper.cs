@@ -53,6 +53,7 @@ namespace AssetStudio
                     rectBottom = Math.Min(rectBottom, originalImage.Height);
                     var rect = new Rectangle(rectX, rectY, rectRight - rectX, rectBottom - rectY);
                     var spriteImage = originalImage.Clone(x => x.Crop(rect));
+                    var spriteImagePad = new Image<Bgra32>((int)Math.Floor(m_Sprite.m_Rect.width), (int)Math.Floor(m_Sprite.m_Rect.height), SixLabors.ImageSharp.Color.Transparent);
                     if (settingsRaw.packed == 1)
                     {
                         //RotateAndFlip
@@ -95,11 +96,12 @@ namespace AssetStudio
                             };
                             using (var mask = new Image<Bgra32>(rect.Width, rect.Height, SixLabors.ImageSharp.Color.Black))
                             {
-                                mask.Mutate(x => x.Fill(options, SixLabors.ImageSharp.Color.Red, path));
+                                mask.Mutate(x => x.Fill(options, SixLabors.ImageSharp.Color.Red, path).Draw(options, Pens.Solid(SixLabors.ImageSharp.Color.Red, 3), path));
                                 var bursh = new ImageBrush(mask);
                                 spriteImage.Mutate(x => x.Fill(graphicsOptions, bursh));
-                                spriteImage.Mutate(x => x.Flip(FlipMode.Vertical));
-                                return spriteImage;
+                                spriteImagePad.Mutate(x => x.DrawImage(spriteImage, new Point((int)Math.Floor(textureRectOffset.X), (int)Math.Floor(textureRectOffset.Y)), opacity: 1f));
+                                spriteImagePad.Mutate(x => x.Flip(FlipMode.Vertical));
+                                return spriteImagePad;
                             }
                         }
                         catch
@@ -109,8 +111,10 @@ namespace AssetStudio
                     }
 
                     //Rectangle
-                    spriteImage.Mutate(x => x.Flip(FlipMode.Vertical));
-                    return spriteImage;
+                    spriteImagePad.Mutate(x => x.DrawImage(spriteImage, new Point((int)Math.Floor(textureRectOffset.X), (int)Math.Floor(textureRectOffset.Y)), opacity: 1f));
+                    spriteImagePad.Mutate(x => x.Flip(FlipMode.Vertical));
+                    return spriteImagePad;
+
                 }
             }
 
